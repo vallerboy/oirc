@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat</title>
+</head>
+<body>
+    <script>
+        var link = "ws://localhost:8080/chat";
+        var webSocket = new WebSocket(link);
+
+        webSocket.onopen = function (ws) {
+            document.getElementById("test").innerHTML = "Działa!";
+        }
+    </script>
+
+
+    <div style="text-align: center;">
+         <ul>
+             <!--tu beda wiadomosci innych userow-->
+             <li>test</li>
+         </ul>
+            <br/>
+        <form>
+            <input type="text" id="writer" placeholder="Podaj wiadomość">
+        </form>
+    </div>
+</body>
+</html>
