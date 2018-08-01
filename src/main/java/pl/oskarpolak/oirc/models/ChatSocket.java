@@ -17,7 +17,7 @@ import java.util.Set;
 @Component
 public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigurer {
 
-    private Set<WebSocketSession> users = new HashSet<>();
+    private Set<User> users = new HashSet<>();
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry webSocketHandlerRegistry) {
@@ -27,20 +27,37 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        users.add(session);
+        users.add(new User(session));
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        for (WebSocketSession user : users) {
-            user.sendMessage(message);
+        User sender = findUserBySession(session);
+        if(sender.getNickname() == null){
+            sender.setNickname(message.getPayload());
+            sender.getSession().sendMessage(new TextMessage("Ustawiliśmy Twój nick"));
+            return;
+        }
+        sendMessageToAllUsers(new TextMessage(sender.getNickname() + ": " + message.getPayload()));
+    }
+
+    private User findUserBySession(WebSocketSession session) {
+        return  users.stream()
+                .filter(s -> s.getSession().getId().equals(session.getId()))
+                .findAny()
+                .orElseThrow(IllegalStateException::new);
+    }
+
+    private void sendMessageToAllUsers(TextMessage message) throws IOException {
+        for (User user : users) {
+            user.getSession().sendMessage(message);
         }
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         users.stream()
-                .filter(s -> s.getId().equals(session.getId()))
+                .filter(s -> s.getSession().getId().equals(session.getId()))
                 .findAny()
                 .ifPresent(s -> users.remove(s));
     }
