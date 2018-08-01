@@ -112,9 +112,6 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
         sendMessageToAllWithoutSender(sender, new TextMessage(sender.getNickname() + ", właśnie wyszedł"));
 
 
-        users.stream()
-                .filter(s -> s.getSession().getId().equals(session.getId()))
-                .findAny()
-                .ifPresent(s -> users.remove(s));
+        users.remove(sender);
     }
 }
