@@ -49,6 +49,7 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
             sender.getSession().sendMessage(new TextMessage("Ustawiliśmy Twój nick"));
 
             sendAllLastMessagesToSender(sender);
+            sendMessageToAllWithoutSender(sender, new TextMessage(sender.getNickname() + ", właśnie się zalogował"));
             return;
         }
 
@@ -56,6 +57,20 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
         addToMessageList(messageToSend);
         sendMessageToAllUsers(messageToSend);
     }
+
+    private void sendMessageToAllWithoutSender(User sender, TextMessage textMessage){
+        users.stream()
+                .filter(s -> !s.getSession().getId().equals(sender.getSession().getId()))
+                .forEach(s -> {
+                    try {
+                        s.getSession().sendMessage(textMessage);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+    }
+
+
 
     private void sendAllLastMessagesToSender(User sender) throws IOException {
         for (TextMessage message : messages) {
@@ -93,6 +108,10 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+        User sender = findUserBySession(session);
+        sendMessageToAllWithoutSender(sender, new TextMessage(sender.getNickname() + ", właśnie wyszedł"));
+
+
         users.stream()
                 .filter(s -> s.getSession().getId().equals(session.getId()))
                 .findAny()
