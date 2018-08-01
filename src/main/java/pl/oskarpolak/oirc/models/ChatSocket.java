@@ -9,9 +9,15 @@ import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 @EnableWebSocket
 @Component
 public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigurer {
+
+    private Set<WebSocketSession> users = new HashSet<>();
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry webSocketHandlerRegistry) {
@@ -21,16 +27,21 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        System.out.println("o ktoś się podłączył :)))");
+        users.add(session);
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-        System.out.println("oooo wysłano wiadomosc");
+        for (WebSocketSession user : users) {
+            user.sendMessage(message);
+        }
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        System.out.println("bajbaj");
+        users.stream()
+                .filter(s -> s.getId().equals(session.getId()))
+                .findAny()
+                .ifPresent(s -> users.remove(s));
     }
 }

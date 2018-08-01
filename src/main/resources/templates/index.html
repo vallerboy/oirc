@@ -6,12 +6,12 @@
 </head>
 <body>
     <div style="text-align: center;">
-         <ul>
+         <ul id="messages">
              <!--tu beda wiadomosci innych userow-->
              <li>test</li>
          </ul>
             <br/>
-        <form id="form" onsubmit="sendMessage(); return false;">
+        <form onsubmit="sendMessage(); return false;">
             <input type="text" id="writer" placeholder="Podaj wiadomość">
         </form>
     </div>
@@ -21,9 +21,14 @@
         var link = "ws://localhost:8080/chat";
         var webSocket = new WebSocket(link);
         var writer = document.getElementById("writer");
+        var messages = document.getElementById("messages");
 
         webSocket.onopen = function (ws) {
-            document.getElementById("test").innerHTML = "Działa!";
+            Console.log("Podłączono");
+        };
+
+        webSocket.onmessage = function (ev) {
+                  messages.innerHTML = messages.innerHTML + '<li>' + ev.data + '</li>';
         };
 
         function sendMessage() {
