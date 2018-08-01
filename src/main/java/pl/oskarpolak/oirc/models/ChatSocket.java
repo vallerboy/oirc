@@ -14,6 +14,7 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @EnableWebSocket
 @Component
@@ -112,6 +113,10 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
         sendMessageToAllWithoutSender(sender, new TextMessage(sender.getNickname() + ", właśnie wyszedł"));
 
 
-        users.remove(sender);
+        users = users.stream()
+                .filter(s -> !s.getSession().getId().equals(session.getId()))
+                .collect(Collectors.toSet());
+        //albo to co wyzej
+        //albo zastanowic sie dobrze nad przeslonieciem metody hashcode jeszcze raz i equals
     }
 }
