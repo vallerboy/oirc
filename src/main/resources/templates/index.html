@@ -5,25 +5,35 @@
     <title>Chat</title>
 </head>
 <body>
-    <script>
-        var link = "ws://localhost:8080/chat";
-        var webSocket = new WebSocket(link);
-
-        webSocket.onopen = function (ws) {
-            document.getElementById("test").innerHTML = "Działa!";
-        }
-    </script>
-
-
     <div style="text-align: center;">
          <ul>
              <!--tu beda wiadomosci innych userow-->
              <li>test</li>
          </ul>
             <br/>
-        <form>
+        <form id="form" onsubmit="sendMessage(); return false;">
             <input type="text" id="writer" placeholder="Podaj wiadomość">
         </form>
     </div>
+
+
+    <script>
+        var link = "ws://localhost:8080/chat";
+        var webSocket = new WebSocket(link);
+        var writer = document.getElementById("writer");
+
+        webSocket.onopen = function (ws) {
+            document.getElementById("test").innerHTML = "Działa!";
+        }
+
+        function sendMessage() {
+            var text = writer.value;
+            writer.value = "";
+
+            webSocket.send(text);
+        }
+
+    </script>
+
 </body>
 </html>
