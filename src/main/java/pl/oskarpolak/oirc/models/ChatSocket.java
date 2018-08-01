@@ -38,7 +38,11 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
             sender.getSession().sendMessage(new TextMessage("Ustawiliśmy Twój nick"));
             return;
         }
-        sendMessageToAllUsers(new TextMessage(sender.getNickname() + ": " + message.getPayload()));
+        sendMessageToAllUsers(createMessageWithSenderNickname(message, sender));
+    }
+
+    private TextMessage createMessageWithSenderNickname(TextMessage message, User sender) {
+        return new TextMessage(sender.getNickname() + ": " + message.getPayload());
     }
 
     private User findUserBySession(WebSocketSession session) {
