@@ -28,6 +28,10 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         users.add(new User(session));
+
+        User connectedUser = findUserBySession(session);
+        connectedUser.getSession().sendMessage(new TextMessage("Witaj na naszym czacie!"));
+        connectedUser.getSession().sendMessage(new TextMessage("Twoja piersza wiadomość będzie Twoim nickiem"));
     }
 
     @Override
