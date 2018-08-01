@@ -10,7 +10,9 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.Queue;
 import java.util.Set;
 
 @EnableWebSocket
@@ -18,6 +20,7 @@ import java.util.Set;
 public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigurer {
 
     private Set<User> users = new HashSet<>();
+    private Queue<TextMessage> messages = new ArrayDeque<>();
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry webSocketHandlerRegistry) {
@@ -44,9 +47,27 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
             }
             sender.setNickname(message.getPayload());
             sender.getSession().sendMessage(new TextMessage("Ustawiliśmy Twój nick"));
+
+            sendAllLastMessagesToSender(sender);
             return;
         }
-        sendMessageToAllUsers(createMessageWithSenderNickname(message, sender));
+
+        TextMessage messageToSend = createMessageWithSenderNickname(message, sender);
+        addToMessageList(messageToSend);
+        sendMessageToAllUsers(messageToSend);
+    }
+
+    private void sendAllLastMessagesToSender(User sender) throws IOException {
+        for (TextMessage message : messages) {
+            sender.getSession().sendMessage(message);
+        }
+    }
+
+    private void addToMessageList(TextMessage messageToSend) {
+        if(messages.size() >= 10){
+            messages.remove();
+        }
+        messages.add(messageToSend);
     }
 
     private boolean isNicknameFree(String nickname) {
