@@ -38,11 +38,19 @@ public class ChatSocket extends TextWebSocketHandler implements WebSocketConfigu
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         User sender = findUserBySession(session);
         if(sender.getNickname() == null){
+            if(!isNicknameFree(message.getPayload())){
+                sender.getSession().sendMessage(new TextMessage("Nick zajęty, wybierz inny"));
+                return;
+            }
             sender.setNickname(message.getPayload());
             sender.getSession().sendMessage(new TextMessage("Ustawiliśmy Twój nick"));
             return;
         }
         sendMessageToAllUsers(createMessageWithSenderNickname(message, sender));
+    }
+
+    private boolean isNicknameFree(String nickname) {
+         return users.stream().noneMatch(s -> s.getNickname() != null && s.getNickname().equals(nickname));
     }
 
     private TextMessage createMessageWithSenderNickname(TextMessage message, User sender) {
